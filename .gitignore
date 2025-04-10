@@ -1,16 +1,5 @@
-# Compiled class file
+# --- Java ---
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
@@ -18,7 +7,39 @@
 *.zip
 *.tar.gz
 *.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# --- Logs ---
+*.log
+
+# --- BlueJ ---
+*.ctxt
+
+# --- J2ME ---
+.mtj.tmp/
+
+# --- Maven ---
+target/
+
+# --- Docker ---
+*.env
+docker-compose.override.yml
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# --- VSCode ---
+.vscode/
+
+# --- Eclipse ---
+*.classpath
+*.project
+*.settings/
+
+# --- OS-specific files ---
+.DS_Store
+Thumbs.db
