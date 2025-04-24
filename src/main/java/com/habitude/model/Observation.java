@@ -1,58 +1,103 @@
 package com.habitude.model;
+
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "observations")
 public class Observation {
-    private String type;
-    private String description;
-    private double duration;
-    private double frequency;
-    private LocalDateTime timeStamp;
 
-    public Observation(String type, String description, double duration, double frequency) {
-        this.type = type;
-        this.description = description;
-        this.duration = duration;
-        this.frequency = frequency;
-        this.timeStamp = LocalDateTime.now();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    /** which subject this log belongs to */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "subject_id")
+    private Subject subject;
+
+    /** who logged it */
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "observer_id")
+    private User observer;
+
+    /** the behavior description */
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String behavior;
+
+    private String context;
+
+    @Column(nullable = false)
+    private LocalDateTime timestamp = LocalDateTime.now();
+
+    private Integer duration;  // in seconds
+    private Integer frequency; // count
+    private String intensity;  // low/medium/high
+
+    public Observation() {}
+
+    // getters & setters
+
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getType() {
-        return type;
+    public Subject getSubject() {
+        return subject;
+    }
+    public void setSubject(Subject subject) {
+        this.subject = subject;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public User getObserver() {
+        return observer;
+    }
+    public void setObserver(User observer) {
+        this.observer = observer;
     }
 
-    public String getDescription() {
-        return description;
+    public String getBehavior() {
+        return behavior;
+    }
+    public void setBehavior(String behavior) {
+        this.behavior = behavior;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public String getContext() {
+        return context;
+    }
+    public void setContext(String context) {
+        this.context = context;
     }
 
-    public double getDuration() {
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public Integer getDuration() {
         return duration;
     }
-
-    public void setDuration(double duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
-    public LocalDateTime getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(LocalDateTime timeStamp) {
-        this.timeStamp = timeStamp;
-    }
-
-    public double getFrequency() {
+    public Integer getFrequency() {
         return frequency;
     }
-
-    public void setFrequency(double frequency) {
+    public void setFrequency(Integer frequency) {
         this.frequency = frequency;
+    }
+
+    public String getIntensity() {
+        return intensity;
+    }
+    public void setIntensity(String intensity) {
+        this.intensity = intensity;
     }
 }
