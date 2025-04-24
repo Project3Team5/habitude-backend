@@ -4,20 +4,33 @@ import com.habitude.service.ObservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.*;
 
 @RestController
+@RequestMapping("/api/observations")
 public class ObservationController {
+
     @Autowired
     private ObservationService observationService;
 
-    @GetMapping("/api/observations/summary")
+    @GetMapping("/summary")
     public Map<String, Object> getSummary() {
         return observationService.getSummary();
     }
 
-    @GetMapping("/api/observations")
+    @GetMapping
     public List<Observation> getAllObservations() {
         return observationService.getAllObservations();
+    }
+
+    @GetMapping("/trend")
+    public Map<String, Object> getTrendData() {
+        return observationService.getTrendData();
+    }
+
+    @GetMapping("/trend/by-subject/{subjectId}")
+    public Map<String, Object> getTrendDataBySubject(@PathVariable Long subjectId) {
+        return observationService.getTrendDataBySubject(subjectId);
     }
 }
