@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ObservationService {
@@ -62,7 +63,7 @@ public class ObservationService {
         List<Observation> observations = observationRepository.findAll();
 
         if (observations.isEmpty()) {
-            return Map.of("frequenctData", Collections.emptyList(), "durationData", Collections.emptyList());
+            return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
         }
         Map<LocalDateTime, List<Observation>> grouped = observations.stream()
                 .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
