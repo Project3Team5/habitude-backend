@@ -32,9 +32,20 @@ public class Observation {
 
     private Integer duration;  // in seconds
     private Integer frequency; // count
-    private String intensity;  // low/medium/high
+    private Intensity intensity;  // low/medium/high
 
     public Observation() {}
+
+    public enum Intensity {
+        LOW, MEDIUM, HIGH
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.timestamp == NULL) {
+            this.timestamp = LocalDateTime.now();
+        }
+    }
 
     // getters & setters
 

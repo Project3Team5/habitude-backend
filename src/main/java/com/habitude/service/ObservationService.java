@@ -5,9 +5,18 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ObservationService {
+
+    private final ObservationRepository observationRepository;
+
+    public ObservationService(ObservationRepository observationRepository) {
+        this.observationRepository = observationRepository;
+    }
+
+    // summary for mock data
     public Map<String, Object> getSummary() {
         Map<String, Object> summary = new HashMap<>();
         double averageFrequency = 3.5;
@@ -18,6 +27,14 @@ public class ObservationService {
     }
 
     public List<Observation> getAllObservations() {
+        List<Observation> observations = observationRepository.findAll();
+        if (observations.isEmpty()) {
+            observations = getMockObservations();
+        }
+        return observations;
+    }
+
+    public List<Observation> getMockObservations() {
         List<Observation> mockObservations = new ArrayList<>();
 
         // first fake record
@@ -39,5 +56,31 @@ public class ObservationService {
         mockObservations.add(o2);
 
         return mockObservations;
+    }
+
+    public Map<String, Object> getTrendData() {
+        // actual observation data from DB
+        List<Observation> observations = observationRepository.findAll();
+
+        if (observations.isEmpty()) {
+            return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
+        }
+        Map<LocalDateTime, List<Observation>> grouped = observations.stream()
+                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
+        List<Map<String, Object>> frequencyData = new ArrayList<>();
+        List<Map<String, Object>> durationData = new ArrayList<>();
+
+        grouped.keySet().forEach(date -> {
+            List<Observation> dailyObservations = grouped.get(date);
+            int totalFrequency = dailyObservations.stream().mapToInt(Observation::getFrequency).sum();
+            int totalDuration = dailyObservations.stream().mapToInt(Observation::getDuration).sum();
+
+            frequencyData.add(Map.of("date", date.toString(), "value", totalFrequency));
+            durationData.add(Map.of("date", date.toString(), "value", totalDuration));
+        });
+        return Map.of(
+                "frequencyData", frequencyData,
+                "durationData", durationData
+        );
     }
 }
