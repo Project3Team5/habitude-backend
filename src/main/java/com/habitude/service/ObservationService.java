@@ -1,6 +1,7 @@
 package com.habitude.service;
 
 import com.habitude.model.Observation;
+import com.habitude.repository.ObservationRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -66,7 +67,7 @@ public class ObservationService {
             return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
         }
         Map<LocalDateTime, List<Observation>> grouped = observations.stream()
-                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
+                .collect(Collectors.groupingBy(o -> LocalDateTime.from(o.getTimestamp().toLocalDate())));
         List<Map<String, Object>> frequencyData = new ArrayList<>();
         List<Map<String, Object>> durationData = new ArrayList<>();
 
@@ -83,4 +84,31 @@ public class ObservationService {
                 "durationData", durationData
         );
     }
+    public Map<String, Object> getTrendDataBySubject(Long subjectId) {
+        List<Observation> observations = observationRepository.findBySubjectId(subjectId); // Make sure this exists
+
+        if (observations.isEmpty()) {
+            return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
+        }
+
+        Map<LocalDateTime, List<Observation>> grouped = observations.stream()
+                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate().atStartOfDay()));
+
+        List<Map<String, Object>> frequencyData = new ArrayList<>();
+        List<Map<String, Object>> durationData = new ArrayList<>();
+
+        grouped.forEach((date, dailyObservations) -> {
+            int totalFrequency = dailyObservations.stream().mapToInt(Observation::getFrequency).sum();
+            int totalDuration = dailyObservations.stream().mapToInt(Observation::getDuration).sum();
+
+            frequencyData.add(Map.of("date", date.toString(), "value", totalFrequency));
+            durationData.add(Map.of("date", date.toString(), "value", totalDuration));
+        });
+
+        return Map.of(
+                "frequencyData", frequencyData,
+                "durationData", durationData
+        );
+    }
+
 }

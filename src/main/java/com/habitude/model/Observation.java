@@ -33,6 +33,7 @@ public class Observation {
     private Integer duration;  // in seconds
     private Integer frequency; // count
     private Intensity intensity;  // low/medium/high
+    private LocalDateTime NULL;
 
     public Observation() {}
 
@@ -105,10 +106,10 @@ public class Observation {
         this.frequency = frequency;
     }
 
-    public String getIntensity() {
+    public Intensity getIntensity() {
         return intensity;
     }
     public void setIntensity(String intensity) {
-        this.intensity = intensity;
+        this.intensity = Intensity.valueOf(intensity);
     }
 }
