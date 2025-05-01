@@ -33,7 +33,6 @@ public class Observation {
     private Integer duration;  // in seconds
     private Integer frequency; // count
     private Intensity intensity;  // low/medium/high
-    private LocalDateTime NULL;
 
     public Observation() {}
 
@@ -43,7 +42,7 @@ public class Observation {
 
     @PrePersist
     public void prePersist() {
-        if (this.timestamp == NULL) {
+        if (this.timestamp == null) {
             this.timestamp = LocalDateTime.now();
         }
     }

@@ -4,6 +4,7 @@ import com.habitude.model.Observation;
 import com.habitude.repository.ObservationRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,21 +65,19 @@ public class ObservationService {
         List<Observation> observations = observationRepository.findAll();
 
         if (observations.isEmpty()) {
-            return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
+            observations = getMockObservations();
         }
-        Map<LocalDateTime, List<Observation>> grouped = observations.stream()
-                .collect(Collectors.groupingBy(o -> LocalDateTime.from(o.getTimestamp().toLocalDate())));
+        Map<LocalDate, List<Observation>> grouped = observations.stream()
+                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
         List<Map<String, Object>> frequencyData = new ArrayList<>();
         List<Map<String, Object>> durationData = new ArrayList<>();
 
-        grouped.keySet().forEach(date -> {
-            List<Observation> dailyObservations = grouped.get(date);
-            int totalFrequency = dailyObservations.stream().mapToInt(Observation::getFrequency).sum();
-            int totalDuration = dailyObservations.stream().mapToInt(Observation::getDuration).sum();
-
-            frequencyData.add(Map.of("date", date.toString(), "value", totalFrequency));
-            durationData.add(Map.of("date", date.toString(), "value", totalDuration));
-        });
+        for (Map.Entry<LocalDate, List<Observation>> entry : grouped.entrySet()) {
+            int freq = entry.getValue().stream().mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0)).sum();
+            int dur = entry.getValue().stream().mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0)).sum();
+            frequencyData.add(Map.of("date", entry.getKey().atStartOfDay().toString(), "value", freq));
+            durationData.add(Map.of("date", entry.getKey().atStartOfDay().toString(), "value", dur));
+        }
         return Map.of(
                 "frequencyData", frequencyData,
                 "durationData", durationData
@@ -91,15 +90,15 @@ public class ObservationService {
             return Map.of("frequencyData", Collections.emptyList(), "durationData", Collections.emptyList());
         }
 
-        Map<LocalDateTime, List<Observation>> grouped = observations.stream()
-                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate().atStartOfDay()));
+        Map<LocalDate, List<Observation>> grouped = observations.stream()
+                .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
 
         List<Map<String, Object>> frequencyData = new ArrayList<>();
         List<Map<String, Object>> durationData = new ArrayList<>();
 
         grouped.forEach((date, dailyObservations) -> {
-            int totalFrequency = dailyObservations.stream().mapToInt(Observation::getFrequency).sum();
-            int totalDuration = dailyObservations.stream().mapToInt(Observation::getDuration).sum();
+            int totalFrequency = dailyObservations.stream().mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0)).sum();
+            int totalDuration = dailyObservations.stream().mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0)).sum();
 
             frequencyData.add(Map.of("date", date.toString(), "value", totalFrequency));
             durationData.add(Map.of("date", date.toString(), "value", totalDuration));
