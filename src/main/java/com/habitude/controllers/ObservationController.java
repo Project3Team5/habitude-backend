@@ -34,4 +34,9 @@ public class ObservationController {
     public Map<String, Object> getTrendDataBySubject(@PathVariable Long subjectId) {
         return observationService.getTrendDataBySubject(subjectId);
     }
+
+    @GetMapping("/mock")
+    public List<Observation> mockData() {
+        return observationService.getMockObservations();
+    }
 }
