@@ -32,10 +32,12 @@ public class Observation {
 
     private Integer duration;  // in seconds
     private Integer frequency; // count
+
     @Enumerated(EnumType.STRING)
     private Intensity intensity;// low/medium/high
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
 
 
     public Observation() {}
