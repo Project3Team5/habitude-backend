@@ -32,19 +32,18 @@ public class Observation {
 
     private Integer duration;  // in seconds
     private Integer frequency; // count
-    private Intensity intensity;  // low/medium/high
+
+    @Enumerated(EnumType.STRING)
+    private Intensity intensity;// low/medium/high
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+
 
     public Observation() {}
 
     public enum Intensity {
         LOW, MEDIUM, HIGH
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.timestamp == null) {
-            this.timestamp = LocalDateTime.now();
-        }
     }
 
     // getters & setters
@@ -108,7 +107,8 @@ public class Observation {
     public Intensity getIntensity() {
         return intensity;
     }
-    public void setIntensity(String intensity) {
-        this.intensity = Intensity.valueOf(intensity);
+    public void setIntensity(Intensity intensity) {
+        this.intensity = intensity;
     }
+
 }
