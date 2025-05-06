@@ -2,10 +2,11 @@ package com.habitude.controllers;
 import com.habitude.model.Observation;
 import com.habitude.service.ObservationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.http.ResponseEntity;
+
 import java.util.*;
 
 @RestController
@@ -39,4 +40,10 @@ public class ObservationController {
     public List<Observation> mockData() {
         return observationService.getMockObservations();
     }
+    @PostMapping
+    public ResponseEntity<Observation> createObservation(@RequestBody Observation observation) {
+        Observation saved = observationService.saveObservation(observation);
+        return ResponseEntity.ok(saved);
+    }
+
 }

@@ -4,8 +4,9 @@ import com.habitude.model.Subject;
 import com.habitude.model.User;
 import com.habitude.repository.SubjectRepository;
 import com.habitude.repository.UserRepository;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
@@ -27,7 +28,7 @@ public class SubjectController {
     public Subject createSubject(@PathVariable Long userId,
                                  @RequestBody Subject input) {
         User owner = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         input.setUser(owner);
         return subjectRepo.save(input);
     }
@@ -42,7 +43,7 @@ public class SubjectController {
     @GetMapping("/subjects/{id}")
     public Subject getSubject(@PathVariable Long id) {
         return subjectRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subject not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
     }
 
     // 4) Update a subject
@@ -50,7 +51,7 @@ public class SubjectController {
     public Subject updateSubject(@PathVariable Long id,
                                  @RequestBody Subject updated) {
         Subject existing = subjectRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subject not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
         existing.setName(updated.getName());
         existing.setDob(updated.getDob());
         existing.setNotes(updated.getNotes());
@@ -59,7 +60,11 @@ public class SubjectController {
 
     // 5) Delete a subject
     @DeleteMapping("/subjects/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSubject(@PathVariable Long id) {
+        if (!subjectRepo.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found");
+        }
         subjectRepo.deleteById(id);
     }
 }

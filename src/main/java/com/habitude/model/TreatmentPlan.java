@@ -118,4 +118,7 @@ public class TreatmentPlan {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+
+    public void setPlanDetails(String s) {
+    }
 }

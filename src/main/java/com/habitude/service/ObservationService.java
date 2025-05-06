@@ -14,6 +14,11 @@ public class ObservationService {
 
     private final ObservationRepository observationRepository;
 
+    public Observation saveObservation(Observation observation) {
+        return observationRepository.save(observation);
+    }
+
+
     public ObservationService(ObservationRepository observationRepository) {
         this.observationRepository = observationRepository;
     }

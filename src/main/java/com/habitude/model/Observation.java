@@ -2,7 +2,8 @@ package com.habitude.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
+import java.util.ArrayList;
+import java.util.List;
 @Entity
 @Table(name = "observations")
 public class Observation {
@@ -37,10 +38,21 @@ public class Observation {
     private Intensity intensity;// low/medium/high
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @OneToMany(mappedBy="observation", cascade=CascadeType.ALL, orphanRemoval=true)
+    private List<LLMFeedback> feedbacks = new ArrayList<>();
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
 
 
-    public Observation() {}
+
+    public Observation() {
+    }
+
+    public void setSeverity(int o) {
+    }
 
     public enum Intensity {
         LOW, MEDIUM, HIGH

@@ -3,6 +3,8 @@ package com.habitude.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "goals")
@@ -27,6 +29,10 @@ public class Goal {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy="goal", cascade=CascadeType.ALL, orphanRemoval=true)
+    private List<TreatmentPlan> treatmentPlans = new ArrayList<>();
+
 
     // getters & setters
 
