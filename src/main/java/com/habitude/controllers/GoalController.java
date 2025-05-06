@@ -6,6 +6,7 @@ import com.habitude.repository.GoalRepository;
 import com.habitude.repository.SubjectRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -28,7 +29,8 @@ public class GoalController {
     public Goal createGoal(@PathVariable Long subjectId,
                            @RequestBody Goal input) {
         Subject subject = subjectRepo.findById(subjectId)
-                .orElseThrow(() -> new RuntimeException("Subject not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Subject not found"));
         input.setSubject(subject);
         return goalRepo.save(input);
     }
@@ -36,6 +38,10 @@ public class GoalController {
     // 2) List all goals for a subject
     @GetMapping("/subjects/{subjectId}/goals")
     public List<Goal> getGoalsForSubject(@PathVariable Long subjectId) {
+        if (!subjectRepo.existsById(subjectId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Subject not found");
+        }
         return goalRepo.findBySubjectId(subjectId);
     }
 
@@ -43,7 +49,8 @@ public class GoalController {
     @GetMapping("/goals/{id}")
     public Goal getGoal(@PathVariable Long id) {
         return goalRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Goal not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Goal not found"));
     }
 
     // 4) Update a goal
@@ -51,7 +58,8 @@ public class GoalController {
     public Goal updateGoal(@PathVariable Long id,
                            @RequestBody Goal updated) {
         Goal existing = goalRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Goal not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Goal not found"));
         existing.setDescription(updated.getDescription());
         existing.setTargetDate(updated.getTargetDate());
         existing.setStatus(updated.getStatus());
@@ -62,7 +70,10 @@ public class GoalController {
     @DeleteMapping("/goals/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGoal(@PathVariable Long id) {
+        if (!goalRepo.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Goal not found");
+        }
         goalRepo.deleteById(id);
     }
 }
-

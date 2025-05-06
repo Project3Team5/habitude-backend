@@ -43,4 +43,3 @@ public class UserController {
         repo.deleteById(id);
     }
 }
-
