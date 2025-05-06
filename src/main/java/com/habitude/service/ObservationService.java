@@ -1,5 +1,6 @@
 package com.habitude.service;
 
+import com.habitude.exception.ObservationNotFoundException;
 import com.habitude.model.Observation;
 import com.habitude.repository.ObservationRepository;
 import org.springframework.stereotype.Service;
@@ -18,15 +19,24 @@ public class ObservationService {
         this.observationRepository = observationRepository;
     }
 
+    /**
+     * Create or save an observation.
+     */
     public Observation saveObservation(Observation observation) {
         return observationRepository.save(observation);
     }
 
+    /**
+     * Retrieve a single observation by ID, or throw 404 if not found.
+     */
     public Observation getObservationById(Long id) {
         return observationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Observation not found"));
+                .orElseThrow(() -> new ObservationNotFoundException(id));
     }
 
+    /**
+     * Update an existing observation.
+     */
     public Observation updateObservation(Long id, Observation updated) {
         Observation existing = getObservationById(id);
         existing.setBehavior(updated.getBehavior());
@@ -38,32 +48,43 @@ public class ObservationService {
         return observationRepository.save(existing);
     }
 
+    /**
+     * Delete an observation, or throw 404 if it doesn't exist.
+     */
     public void deleteObservation(Long id) {
+        if (!observationRepository.existsById(id)) {
+            throw new ObservationNotFoundException(id);
+        }
         observationRepository.deleteById(id);
     }
 
-    // summary for mock data
+    /**
+     * Return some summary metrics (mocked).
+     */
     public Map<String, Object> getSummary() {
         Map<String, Object> summary = new HashMap<>();
-        double averageFrequency = 3.5;
-        double averageDuration = 15.0;
-        summary.put("averageFrequency", averageFrequency);
-        summary.put("averageDuration", averageDuration);
+        summary.put("averageFrequency", 3.5);
+        summary.put("averageDuration", 15.0);
         return summary;
     }
 
+    /**
+     * List all observations, or return mock data if none.
+     */
     public List<Observation> getAllObservations() {
         List<Observation> observations = observationRepository.findAll();
         if (observations.isEmpty()) {
-            observations = getMockObservations();
+            return getMockObservations();
         }
         return observations;
     }
 
+    /**
+     * Provide mock observations.
+     */
     public List<Observation> getMockObservations() {
         List<Observation> mockObservations = new ArrayList<>();
 
-        // first fake record
         Observation o1 = new Observation();
         o1.setBehavior("Behavior A");
         o1.setContext("First behavior");
@@ -72,7 +93,6 @@ public class ObservationService {
         o1.setTimestamp(LocalDateTime.now());
         mockObservations.add(o1);
 
-        // second fake record
         Observation o2 = new Observation();
         o2.setBehavior("Behavior B");
         o2.setContext("Second behavior");
@@ -84,30 +104,48 @@ public class ObservationService {
         return mockObservations;
     }
 
+    /**
+     * Trend data across all observations.
+     */
     public Map<String, Object> getTrendData() {
         List<Observation> observations = observationRepository.findAll();
         if (observations.isEmpty()) {
             observations = getMockObservations();
         }
+
         Map<LocalDate, List<Observation>> grouped = observations.stream()
                 .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
+
         List<Map<String, Object>> frequencyData = new ArrayList<>();
         List<Map<String, Object>> durationData = new ArrayList<>();
 
         for (Map.Entry<LocalDate, List<Observation>> entry : grouped.entrySet()) {
             int freq = entry.getValue().stream()
-                    .mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0)).sum();
+                    .mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0))
+                    .sum();
             int dur = entry.getValue().stream()
-                    .mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0)).sum();
-            frequencyData.add(Map.of("date", entry.getKey().atStartOfDay().toString(), "value", freq));
-            durationData.add(Map.of("date", entry.getKey().atStartOfDay().toString(), "value", dur));
+                    .mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0))
+                    .sum();
+
+            frequencyData.add(Map.of(
+                    "date", entry.getKey().atStartOfDay().toString(),
+                    "value", freq
+            ));
+            durationData.add(Map.of(
+                    "date", entry.getKey().atStartOfDay().toString(),
+                    "value", dur
+            ));
         }
+
         return Map.of(
                 "frequencyData", frequencyData,
                 "durationData", durationData
         );
     }
 
+    /**
+     * Trend data filtered by subject.
+     */
     public Map<String, Object> getTrendDataBySubject(Long subjectId) {
         List<Observation> observations = observationRepository.findBySubjectId(subjectId);
         if (observations.isEmpty()) {
@@ -116,16 +154,20 @@ public class ObservationService {
                     "durationData", Collections.emptyList()
             );
         }
+
         Map<LocalDate, List<Observation>> grouped = observations.stream()
                 .collect(Collectors.groupingBy(o -> o.getTimestamp().toLocalDate()));
+
         List<Map<String, Object>> frequencyData = new ArrayList<>();
         List<Map<String, Object>> durationData = new ArrayList<>();
 
         grouped.forEach((date, dailyObservations) -> {
             int totalFrequency = dailyObservations.stream()
-                    .mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0)).sum();
+                    .mapToInt(o -> Optional.ofNullable(o.getFrequency()).orElse(0))
+                    .sum();
             int totalDuration = dailyObservations.stream()
-                    .mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0)).sum();
+                    .mapToInt(o -> Optional.ofNullable(o.getDuration()).orElse(0))
+                    .sum();
 
             frequencyData.add(Map.of("date", date.toString(), "value", totalFrequency));
             durationData.add(Map.of("date", date.toString(), "value", totalDuration));
