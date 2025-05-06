@@ -68,7 +68,7 @@ public class ObservationControllerTest {
         mockMvc.perform(post("/api/observations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(obs)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.behavior", is("TestBehavior")));
     }
@@ -114,5 +114,23 @@ public class ObservationControllerTest {
         mockMvc.perform(get("/api/observations/mock"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(greaterThan(0))));
+    }
+
+    @Test
+    void testDeleteObservation() throws Exception {
+        Observation obs = new Observation();
+        obs.setSubject(testSubject);
+        obs.setObserver(testUser);
+        obs.setBehavior("ToBeDeleted");
+        obs.setTimestamp(LocalDateTime.now());
+        obs = obsRepo.save(obs);
+
+        // delete
+        mockMvc.perform(delete("/api/observations/{id}", obs.getId()))
+                .andExpect(status().isNoContent());
+
+        // GET afterwards currently returns 5xx
+        mockMvc.perform(get("/api/observations/{id}", obs.getId()))
+                .andExpect(status().isNotFound());
     }
 }
