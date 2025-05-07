@@ -31,7 +31,6 @@ public class ObservationController {
     }
 
 
-
     // get by id
     @GetMapping("/{id}")
     public ResponseEntity<Observation> getObservation(@PathVariable Long id) {
