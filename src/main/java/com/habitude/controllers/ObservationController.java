@@ -24,10 +24,13 @@ public class ObservationController {
     }
 
     // list all
-    @GetMapping
-    public List<Observation> getAllObservations() {
-        return observationService.getAllObservations();
+
+    @GetMapping("/subjects/{subjectId}")
+    public List<Observation> getAllObservationsBySubject(@PathVariable Long subjectId) {
+        return observationService.getAllObservationsBySubject(subjectId);
     }
+
+
 
     // get by id
     @GetMapping("/{id}")
