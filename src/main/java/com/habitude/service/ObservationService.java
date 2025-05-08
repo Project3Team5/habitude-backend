@@ -15,6 +15,12 @@ public class ObservationService {
 
     private final ObservationRepository observationRepository;
 
+
+
+    public List<Observation> getAllObservationsBySubject(Long subjectId) {
+        return observationRepository.findBySubjectId(subjectId);
+    }
+
     public ObservationService(ObservationRepository observationRepository) {
         this.observationRepository = observationRepository;
     }

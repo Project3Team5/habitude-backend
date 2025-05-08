@@ -74,7 +74,7 @@ public class ObservationControllerTest {
     }
 
     @Test
-    void testGetAllObservations() throws Exception {
+    void testGetAllObservationsBySubject() throws Exception {
         // seed one record
         Observation obs = new Observation();
         obs.setSubject(testSubject);
@@ -83,7 +83,7 @@ public class ObservationControllerTest {
         obs.setTimestamp(LocalDateTime.now());
         obsRepo.save(obs);
 
-        mockMvc.perform(get("/api/observations"))
+        mockMvc.perform(get("/api/observations/subjects/{subjectId}", testSubject.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
     }
@@ -129,7 +129,7 @@ public class ObservationControllerTest {
         mockMvc.perform(delete("/api/observations/{id}", obs.getId()))
                 .andExpect(status().isNoContent());
 
-        // GET afterwards currently returns 5xx
+        // GET afterwards now returns 404 Not Found
         mockMvc.perform(get("/api/observations/{id}", obs.getId()))
                 .andExpect(status().isNotFound());
     }

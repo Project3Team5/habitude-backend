@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface ObservationRepository extends JpaRepository<Observation, Long> {
     List<Observation> findBySubjectId(Long subjectId);
+
 }
 
