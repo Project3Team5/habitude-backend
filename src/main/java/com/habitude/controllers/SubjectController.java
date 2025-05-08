@@ -1,64 +1,85 @@
 package com.habitude.controllers;
 
+import com.habitude.dto.SubjectCreateDto;
+import com.habitude.dto.SubjectUpdateDto;
+import com.habitude.dto.SubjectResponseDto;
 import com.habitude.model.Subject;
 import com.habitude.model.User;
 import com.habitude.repository.SubjectRepository;
 import com.habitude.repository.UserRepository;
+
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 public class SubjectController {
 
     private final SubjectRepository subjectRepo;
-    private final UserRepository   userRepo;
+    private final UserRepository userRepo;
 
-    public SubjectController(SubjectRepository subjectRepo,
-                             UserRepository userRepo) {
+    public SubjectController(SubjectRepository subjectRepo, UserRepository userRepo) {
         this.subjectRepo = subjectRepo;
-        this.userRepo    = userRepo;
+        this.userRepo = userRepo;
     }
 
-    // 1) Create a new subject for a user
+    // Create subject for a user
     @PostMapping("/users/{userId}/subjects")
-    @ResponseStatus(HttpStatus.CREATED)
-    public Subject createSubject(@PathVariable Long userId,
-                                 @RequestBody Subject input) {
-        User owner = userRepo.findById(userId)
+    public ResponseEntity<SubjectResponseDto> createSubject(@PathVariable Long userId,
+                                                            @Valid @RequestBody SubjectCreateDto dto) {
+        User user = userRepo.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        input.setUser(owner);
-        return subjectRepo.save(input);
+
+        Subject subject = new Subject(user, dto.getName(), dto.getDob(), dto.getNotes());
+        Subject saved = subjectRepo.save(subject);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new SubjectResponseDto(saved));
     }
 
-    // 2) List all subjects for a user
+    // List all subjects for a user
     @GetMapping("/users/{userId}/subjects")
-    public List<Subject> getSubjectsForUser(@PathVariable Long userId) {
-        return subjectRepo.findByUserId(userId);
+    public ResponseEntity<List<SubjectResponseDto>> getSubjectsForUser(@PathVariable Long userId) {
+        if (!userRepo.existsById(userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+
+        List<SubjectResponseDto> subjects = subjectRepo.findByUserId(userId).stream()
+                .map(SubjectResponseDto::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(subjects);
     }
 
-    // 3) Get a single subject by its ID
+    // Get a single subject
     @GetMapping("/subjects/{id}")
-    public Subject getSubject(@PathVariable Long id) {
-        return subjectRepo.findById(id)
+    public ResponseEntity<SubjectResponseDto> getSubject(@PathVariable Long id) {
+        Subject subject = subjectRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
+
+        return ResponseEntity.ok(new SubjectResponseDto(subject));
     }
 
-    // 4) Update a subject
+    // Update a subject
     @PutMapping("/subjects/{id}")
-    public Subject updateSubject(@PathVariable Long id,
-                                 @RequestBody Subject updated) {
-        Subject existing = subjectRepo.findById(id)
+    public ResponseEntity<SubjectResponseDto> updateSubject(@PathVariable Long id,
+                                                            @Valid @RequestBody SubjectUpdateDto dto) {
+        Subject subject = subjectRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found"));
-        existing.setName(updated.getName());
-        existing.setDob(updated.getDob());
-        existing.setNotes(updated.getNotes());
-        return subjectRepo.save(existing);
+
+        if (dto.getName() != null) subject.setName(dto.getName());
+        if (dto.getDob() != null) subject.setDob(dto.getDob());
+        if (dto.getNotes() != null) subject.setNotes(dto.getNotes());
+
+        Subject updated = subjectRepo.save(subject);
+        return ResponseEntity.ok(new SubjectResponseDto(updated));
     }
 
-    // 5) Delete a subject
+    // Delete a subject
     @DeleteMapping("/subjects/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSubject(@PathVariable Long id) {
